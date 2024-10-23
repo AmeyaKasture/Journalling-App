@@ -2,12 +2,18 @@ package androidsamples.java.journalapp;
 
 import android.content.Context;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Room;
+
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class JournalRepository {
     private static final String DATABASE_NAME = "journal_table";
     private final JournalEntryDao mJournalEntryDao;
     private static JournalRepository sInstance;
+    private final Executor mExecutor = Executors.newSingleThreadExecutor();
     private JournalRepository(Context context) {
         JournalRoomDatabase db
                 = Room.databaseBuilder(context.getApplicationContext(),
@@ -23,6 +29,14 @@ public class JournalRepository {
         if (sInstance == null)
             throw new IllegalStateException("Repo. must be initialized");
         return sInstance;
+    }
+
+    public void insert(JournalEntry entry) {
+        mExecutor.execute(() -> mJournalEntryDao.insert(entry));
+    }
+
+    public LiveData<List<JournalEntry>> getAllEntries() {
+        return mJournalEntryDao.getAllEntries();
     }
 
 }
