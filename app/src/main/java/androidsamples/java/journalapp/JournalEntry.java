@@ -36,5 +36,56 @@ public class JournalEntry {
         mdate=date;
     }
 
-// getters and setters
+    // Getter for mUid
+    @NonNull
+    public UUID getUid() {
+        return mUid;
+    }
+
+    // Setter for mUid
+    public void setUid(@NonNull UUID mUid) {
+        this.mUid = mUid;
+    }
+
+    // Getter for mTitle
+    public String getTitle() {
+        return mTitle;
+    }
+
+    // Setter for mTitle
+    public void setTitle(String mTitle) {
+        this.mTitle = mTitle;
+    }
+
+    // Getter for mstart_time
+    public String getStartTime() {
+        return mstart_time;
+    }
+
+    // Setter for mstart_time
+    public void setStartTime(String mstart_time) {
+        this.mstart_time = mstart_time;
+    }
+
+    // Getter for mend_time
+    public String getEndTime() {
+        return mend_time;
+    }
+
+    // Setter for mend_time
+    public void setEndTime(String mend_time) {
+        this.mend_time = mend_time;
+    }
+
+    // Getter for mdate
+    public String getDate() {
+        return mdate;
+    }
+
+    // Setter for mdate
+    public void setDate(String mdate) {
+        this.mdate = mdate;
+    }
+
+
 }

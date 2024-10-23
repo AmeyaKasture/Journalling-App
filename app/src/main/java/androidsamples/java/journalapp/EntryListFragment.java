@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -17,10 +19,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
  * A fragment representing a list of Items.
  */
 public class EntryListFragment extends Fragment {
-
+  private JournalViewModel mJournalViewModel;
   @Override
   public void onCreate(Bundle savedInstanceState) {
+
     super.onCreate(savedInstanceState);
+
   }
 
   @Override
@@ -36,6 +40,11 @@ public class EntryListFragment extends Fragment {
       // Navigate using the action
       Navigation.findNavController(view).navigate(action);
     });
+
+    RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
+    JournalEntryListAdapter adapter = new JournalEntryListAdapter(view.getContext());
+    recyclerView.setAdapter(adapter);
+    recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
     return view;
   }
