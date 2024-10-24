@@ -29,6 +29,9 @@
     <action
         android:id="@+id/timePickerAction"
         app:destination="@id/timePickerDialog" />
+    <action
+        android:id="@+id/save_entry"
+        app:destination="@id/entryListFragment"/>
     <argument
         android:name="selectedYear"
         app:argType="integer"

@@ -14,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -143,5 +145,7 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
 
     // Show a confirmation message
     Toast.makeText(getContext(), "Journal entry saved", Toast.LENGTH_SHORT).show();
+    NavDirections action = EntryDetailsFragmentDirections.saveEntry();
+    Navigation.findNavController(requireView()).navigate(action);
   }
 }
