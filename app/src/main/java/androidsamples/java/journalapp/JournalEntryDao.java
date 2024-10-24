@@ -12,6 +12,6 @@ public interface JournalEntryDao {
     @Insert
     void insert(JournalEntry entry);
 
-    @Query("SELECT * from journal_table ORDER BY title ASC")
+    @Query("SELECT * FROM journal_table ORDER BY substr(date, instr(date, ',') + 1) DESC")
     LiveData<List<JournalEntry>> getAllEntries();
 }
