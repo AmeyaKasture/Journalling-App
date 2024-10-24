@@ -8,12 +8,15 @@ import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.List;
 
 /**
  * A fragment representing a list of Items.
@@ -45,6 +48,14 @@ public class EntryListFragment extends Fragment {
     JournalEntryListAdapter adapter = new JournalEntryListAdapter(view.getContext());
     recyclerView.setAdapter(adapter);
     recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
+
+    mJournalViewModel = new ViewModelProvider(this).get(JournalViewModel.class);
+
+    // Use getViewLifecycleOwner() to observe LiveData safely
+    mJournalViewModel.getAllEntries().observe(getViewLifecycleOwner(), entries -> {
+      // Update the adapter when the data changes
+      adapter.setEntries(entries);
+    });
 
     return view;
   }

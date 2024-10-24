@@ -4,36 +4,44 @@ import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
 
 import java.util.Date;
 import java.util.UUID;
 
 @Entity(tableName = "journal_table")
+@TypeConverters({JournalTypeConverters.class})  // Add the converter here
 public class JournalEntry {
+
     @PrimaryKey
-    @ColumnInfo(name = "id")
     @NonNull
-    private UUID mUid;
+    @ColumnInfo(name = "id")
+    private UUID mUid;  // Using UUID type now
 
     @ColumnInfo(name = "title")
     private String mTitle;
 
     @ColumnInfo(name = "start_time")
-    private String mstart_time;
+    private String mStartTime;
 
     @ColumnInfo(name = "end_time")
-    private String mend_time;
+    private String mEndTime;
 
     @ColumnInfo(name = "date")
-    private String mdate;
+    private String mDate;
 
+    // Constructor
+    public JournalEntry(@NonNull String mTitle, String mStartTime, String mEndTime, String mDate) {
+        this.mUid = UUID.randomUUID();  // Generate UUID without converting to String
+        this.mTitle = mTitle;
+        this.mStartTime = mStartTime;
+        this.mEndTime = mEndTime;
+        this.mDate = mDate;
+    }
 
-    public JournalEntry(@NonNull String title, String start_time,String end_time,String date) {
-        mUid = UUID.randomUUID();
-        mTitle = title;
-        mstart_time=start_time;
-        mend_time=end_time;
-        mdate=date;
+    // Empty constructor (required by Room)
+    public JournalEntry() {
+        this.mUid = UUID.randomUUID();  // Generate new UUID by default
     }
 
     // Getter for mUid
@@ -57,35 +65,33 @@ public class JournalEntry {
         this.mTitle = mTitle;
     }
 
-    // Getter for mstart_time
+    // Getter for mStartTime
     public String getStartTime() {
-        return mstart_time;
+        return mStartTime;
     }
 
-    // Setter for mstart_time
-    public void setStartTime(String mstart_time) {
-        this.mstart_time = mstart_time;
+    // Setter for mStartTime
+    public void setStartTime(String mStartTime) {
+        this.mStartTime = mStartTime;
     }
 
-    // Getter for mend_time
+    // Getter for mEndTime
     public String getEndTime() {
-        return mend_time;
+        return mEndTime;
     }
 
-    // Setter for mend_time
-    public void setEndTime(String mend_time) {
-        this.mend_time = mend_time;
+    // Setter for mEndTime
+    public void setEndTime(String mEndTime) {
+        this.mEndTime = mEndTime;
     }
 
-    // Getter for mdate
+    // Getter for mDate
     public String getDate() {
-        return mdate;
+        return mDate;
     }
 
-    // Setter for mdate
-    public void setDate(String mdate) {
-        this.mdate = mdate;
+    // Setter for mDate
+    public void setDate(String mDate) {
+        this.mDate = mDate;
     }
-
-
 }

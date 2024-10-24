@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,12 +20,13 @@ import java.util.Locale;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link EntryDetailsFragment # newInstance} factory method to
+ * Use the {@link EntryDetailsFragment #newInstance} factory method to
  * create an instance of this fragment.
  */
 public class EntryDetailsFragment extends Fragment implements DatePickerDialog.OnDateSetListener {
 
-  private Button mDateButton;
+  private Button mDateButton, mStartTimeButton, mEndTimeButton;
+  private Calendar mStartTimeCalendar, mEndTimeCalendar;
 
   @Nullable
   @Override
@@ -37,18 +39,42 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
     super.onViewCreated(view, savedInstanceState);
 
     mDateButton = view.findViewById(R.id.btn_entry_date);
+    mStartTimeButton = view.findViewById(R.id.btn_start_time);
+    mEndTimeButton = view.findViewById(R.id.btn_end_time);
 
+    // Initialize the start and end time calendars
+    mStartTimeCalendar = Calendar.getInstance();
+    mEndTimeCalendar = Calendar.getInstance();
+
+    // Date picker for the date button
     mDateButton.setOnClickListener(v -> {
-      // Create a new instance of DatePickerFragment and show it
       DatePickerFragment datePickerFragment = DatePickerFragment.newInstance(new Date(), this);
       datePickerFragment.show(getParentFragmentManager(), "datePicker");
+    });
+
+    // Time picker for the start time button
+    mStartTimeButton.setOnClickListener(v -> {
+      TimePickerFragment timePickerFragment = TimePickerFragment.newInstance(new Date(), (view1, hourOfDay, minute) -> {
+        mStartTimeCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        mStartTimeCalendar.set(Calendar.MINUTE, minute);
+        updateButtonTime(mStartTimeButton, mStartTimeCalendar, "Start Time");
+      });
+      timePickerFragment.show(getParentFragmentManager(), "startTimePicker");
+    });
+
+    // Time picker for the end time button with sanity check
+    mEndTimeButton.setOnClickListener(v -> {
+      TimePickerFragment timePickerFragment = TimePickerFragment.newInstance(new Date(), (view1, hourOfDay, minute) -> {
+        mEndTimeCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        mEndTimeCalendar.set(Calendar.MINUTE, minute);
+      });
+      timePickerFragment.show(getParentFragmentManager(), "endTimePicker");
     });
   }
 
   // This method will be called when a date is selected
   @Override
   public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-    // Handle the selected date
     Calendar calendar = Calendar.getInstance();
     calendar.set(year, month, dayOfMonth);
     Date selectedDate = calendar.getTime();
@@ -59,5 +85,14 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
 
     // Update the button text with the formatted date
     mDateButton.setText(formattedDate);
+  }
+
+  // Helper method to update the button text with the formatted time (hh:mm) and replace button text with "Start Time" or "End Time"
+  private void updateButtonTime(Button button, Calendar calendar, String label) {
+    SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+    String formattedTime = timeFormat.format(calendar.getTime());
+
+    // Set button text to the format: "<label>: <formattedTime>"
+    button.setText( formattedTime);
   }
 }
