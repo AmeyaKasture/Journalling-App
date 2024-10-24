@@ -29,6 +29,6 @@ public interface JournalEntryDao {
             "WHEN instr(date, 'November') > 0 THEN '11' " +
             "WHEN instr(date, 'December') > 0 THEN '12' " +
             "END) || '-' || " +
-            "substr(date, instr(date, ' ') + 1, instr(date, ',') - instr(date, ' ') - 1) DESC")
+            "substr(date, length(date) - 7, 2) DESC")
     LiveData<List<JournalEntry>> getAllEntries();
 }

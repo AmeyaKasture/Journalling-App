@@ -2,6 +2,7 @@ package androidsamples.java.journalapp;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +34,7 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
   private Calendar mStartTimeCalendar, mEndTimeCalendar, mDateCalendar;
   private JournalViewModel mJournalViewModel;
   private EditText mTitleEditText;
+  public final String TAG="tagger";
 
   @Nullable
   @Override
@@ -142,7 +144,7 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
 
     // Insert the journal entry using the ViewModel
     mJournalViewModel.insert(newEntry);
-
+    Log.d(TAG,formattedDate);
     // Show a confirmation message
     Toast.makeText(getContext(), "Journal entry saved", Toast.LENGTH_SHORT).show();
     NavDirections action = EntryDetailsFragmentDirections.saveEntry();
