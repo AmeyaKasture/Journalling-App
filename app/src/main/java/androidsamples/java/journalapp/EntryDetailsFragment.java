@@ -23,11 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link EntryDetailsFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+
 public class EntryDetailsFragment extends Fragment implements DatePickerDialog.OnDateSetListener {
 
   private Button mDateButton, mStartTimeButton, mEndTimeButton, mSaveButton;

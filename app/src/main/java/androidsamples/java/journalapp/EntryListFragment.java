@@ -1,7 +1,12 @@
 package androidsamples.java.journalapp;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -23,9 +28,12 @@ import java.util.List;
  */
 public class EntryListFragment extends Fragment {
   private JournalViewModel mJournalViewModel;
+  private static final String TAG = "EntryListFragment";
+  private View view;
   @Override
   public void onCreate(Bundle savedInstanceState) {
-
+    mJournalViewModel = new ViewModelProvider(this).get(JournalViewModel.class);
+    setHasOptionsMenu(true);
     super.onCreate(savedInstanceState);
 
   }
@@ -58,6 +66,31 @@ public class EntryListFragment extends Fragment {
     });
 
     return view;
+  }
+
+  @Override
+  public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+    super.onCreateOptionsMenu(menu, inflater);
+    inflater.inflate(R.menu.menu_entry_list, menu);
+  }
+
+//  @Override
+//  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+//    if (item.getItemId() == R.id.info) {
+//      Log.d(TAG, "Info button clicked");
+//      Navigation.findNavController(view).navigate(R.id.infoAction);
+//    }
+//    return super.onOptionsItemSelected(item);
+//  }
+
+  @Override
+  public void onAttach(@NonNull Context context) {
+    super.onAttach(context);
+  }
+
+  @Override
+  public void onDetach() {
+    super.onDetach();
   }
 
 }
