@@ -8,4 +8,8 @@
   <string name="save_label">Save</string>
   <string name="to">To</string>
   <string name="record_entry">Record Entry</string>
+  <!-- TODO: Remove or change this placeholder text -->
+  <string name="hello_blank_fragment">Hello blank fragment</string>
+  <string name="journal_app">Journal App</string>
+  <string name="info_text">The Journal app allows users to record their day to day activities. Users are allowed to delete and share their journal entries with other users through any messaging or similar application.</string>
 </resources>

@@ -1,54 +1,56 @@
 package androidsamples.java.journalapp;
 
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.os.Bundle;
-import android.widget.DatePicker;
+import android.widget.Button;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
+
 public class DatePickerFragment extends DialogFragment {
-
-  private static final String ARG_DATE = "date";
-  private DatePickerDialog.OnDateSetListener mListener;
-
-  // Factory method to create a new instance of DatePickerFragment
   @NonNull
-  public static DatePickerFragment newInstance(Date date, DatePickerDialog.OnDateSetListener listener) {
+  public static DatePickerFragment newInstance(Date date) {
     DatePickerFragment fragment = new DatePickerFragment();
-    fragment.mListener = listener;
-
-    // Pass the date as an argument to the fragment
     Bundle args = new Bundle();
-    args.putLong(ARG_DATE, date.getTime());
     fragment.setArguments(args);
-
     return fragment;
   }
 
   @NonNull
   @Override
-  public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-    // Retrieve the date passed as an argument
-    Date date = new Date();
-    if (getArguments() != null) {
-      long dateMillis = getArguments().getLong(ARG_DATE);
-      date = new Date(dateMillis);
-    }
+  public Dialog onCreateDialog(Bundle savedInstanceState) {
+    final Calendar calendar = Calendar.getInstance();
+    int yearVal = calendar.get(Calendar.YEAR);
+    int monthVal = calendar.get(Calendar.MONTH);
+    int dateVal = calendar.get(Calendar.DAY_OF_MONTH);
+    return new DatePickerDialog(getActivity(), (dp, y, m, d) -> putUserDate(y, m, d), yearVal, monthVal, dateVal);
+  }
 
-    // Initialize Calendar with the given date
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(date);
-    int year = calendar.get(Calendar.YEAR);
-    int month = calendar.get(Calendar.MONTH);
-    int day = calendar.get(Calendar.DAY_OF_MONTH);
+  /**
+   *
+   * To populate the date value set by the user in the DatePicker
+   *
+   * @param year year value
+   * @param month month value
+   * @param day day value
+   */
+  public void putUserDate(int year, int month, int day) {
+    Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.DATE, day);
+    cal.set(Calendar.MONTH, month);
+    cal.set(Calendar.YEAR, year);
 
-    // Create and return the DatePickerDialog
-    return new DatePickerDialog(requireContext(), mListener, year, month, day);
+    @SuppressLint("SimpleDateFormat") Format formatter = new SimpleDateFormat("E, MMM dd, yyyy");
+    String s = formatter.format(cal.getTime());
+
+    Button b = requireActivity().findViewById(R.id.btn_entry_date);
+    b.setText(s);
   }
 }

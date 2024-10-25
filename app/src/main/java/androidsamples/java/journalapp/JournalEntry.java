@@ -1,101 +1,77 @@
 package androidsamples.java.journalapp;
 
-
-
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
 
-import java.util.Date;
 import java.util.UUID;
 
 @Entity(tableName = "journal_table")
-@TypeConverters({JournalTypeConverters.class})  // Add the converter here
 public class JournalEntry {
-
     @PrimaryKey
-    @NonNull
     @ColumnInfo(name = "id")
-    private UUID mUid;  // Using UUID type now
+    @NonNull
+    private UUID mUid;
 
     @ColumnInfo(name = "title")
     private String mTitle;
 
-    @ColumnInfo(name = "start_time")
-    private String mStartTime;
-
-    @ColumnInfo(name = "end_time")
-    private String mEndTime;
-
     @ColumnInfo(name = "date")
     private String mDate;
 
-    // Constructor
-    public JournalEntry(@NonNull String mTitle, String mStartTime, String mEndTime, String mDate) {
-        this.mUid = UUID.randomUUID();  // Generate UUID without converting to String
-        this.mTitle = mTitle;
-        this.mStartTime = mStartTime;
-        this.mEndTime = mEndTime;
-        this.mDate = mDate;
+    @ColumnInfo(name = "start")
+    private String mStart;
+
+    @ColumnInfo(name = "end")
+    private String mEnd;
+
+    public JournalEntry(@NonNull String title, String date, String start, String end) {
+        mUid = UUID.randomUUID();
+        mTitle = title;
+        mDate = date;
+        mStart = start;
+        mEnd = end;
     }
 
-    // Empty constructor (required by Room)
-    public JournalEntry() {
-        this.mUid = UUID.randomUUID();  // Generate new UUID by default
-    }
-
-    // Getter for mUid
     @NonNull
     public UUID getUid() {
         return mUid;
     }
 
-    // Setter for mUid
-    public void setUid(@NonNull UUID mUid) {
-        this.mUid = mUid;
+    public void setUid(@NonNull UUID id) {
+        mUid = id;
     }
 
-    // Getter for mTitle
-    public String getTitle() {
+    public String title() {
         return mTitle;
     }
 
-    // Setter for mTitle
-    public void setTitle(String mTitle) {
-        this.mTitle = mTitle;
+    public void setTitle(String title) {
+        mTitle = title;
     }
 
-    // Getter for mStartTime
-    public String getStartTime() {
-        return mStartTime;
-    }
-
-    // Setter for mStartTime
-    public void setStartTime(String mStartTime) {
-        this.mStartTime = mStartTime;
-    }
-
-    // Getter for mEndTime
-    public String getEndTime() {
-        return mEndTime;
-    }
-
-    // Setter for mEndTime
-    public void setEndTime(String mEndTime) {
-        this.mEndTime = mEndTime;
-    }
-
-    // Getter for mDate
-    public String getDate() {
+    public String date() {
         return mDate;
     }
 
-    // Setter for mDate
     public void setDate(String mDate) {
         this.mDate = mDate;
+    }
+
+    public String start() {
+        return mStart;
+    }
+
+    public void setStart(String mStart) {
+        this.mStart = mStart;
+    }
+
+    public String end() {
+        return mEnd;
+    }
+
+    public void setEnd(String mEnd) {
+        this.mEnd = mEnd;
     }
 }
