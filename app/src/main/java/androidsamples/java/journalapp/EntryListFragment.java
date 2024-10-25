@@ -1,6 +1,8 @@
 package androidsamples.java.journalapp;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -74,14 +76,21 @@ public class EntryListFragment extends Fragment {
     inflater.inflate(R.menu.menu_entry_list, menu);
   }
 
-//  @Override
-//  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-//    if (item.getItemId() == R.id.info) {
-//      Log.d(TAG, "Info button clicked");
-//      Navigation.findNavController(view).navigate(R.id.infoAction);
-//    }
-//    return super.onOptionsItemSelected(item);
-//  }
+  @Override
+  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    if (item.getItemId() == R.id.info) {
+      openAuthorWebpage();
+      return true; // Return true to indicate that the click was handled
+    }
+    return super.onOptionsItemSelected(item);
+  }
+
+  private void openAuthorWebpage() {
+    String url = "https://jamesclear.com/atomic-habits";
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    intent.setData(Uri.parse(url));
+    startActivity(intent);
+  }
 
   @Override
   public void onAttach(@NonNull Context context) {
