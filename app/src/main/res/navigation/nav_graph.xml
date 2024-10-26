@@ -13,7 +13,9 @@
     <action
         android:id="@+id/addEntryAction"
         app:destination="@id/entryDetailsFragment" />
+
   </fragment>
+
   <fragment
       android:id="@+id/entryDetailsFragment"
       android:name="androidsamples.java.journalapp.EntryDetailsFragment"
@@ -29,9 +31,6 @@
     <action
         android:id="@+id/timePickerAction"
         app:destination="@id/timePickerDialog" />
-    <action
-        android:id="@+id/save_entry"
-        app:destination="@id/entryListFragment"/>
     <argument
         android:name="selectedYear"
         app:argType="integer"
@@ -52,5 +51,10 @@
 
   <dialog
       android:id="@+id/timePickerDialog"
-      android:name="androidsamples.java.journalapp.TimePickerFragment" />
+      android:name="androidsamples.java.journalapp.TimePickerFragment" >
+    <argument
+        android:name="isStart"
+        app:argType="boolean"
+        android:defaultValue="true"/>
+  </dialog>
 </navigation>

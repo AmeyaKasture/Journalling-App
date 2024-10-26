@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData;
 import androidx.room.Room;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -34,9 +35,19 @@ public class JournalRepository {
     public void insert(JournalEntry entry) {
         mExecutor.execute(() -> mJournalEntryDao.insert(entry));
     }
+    public void update(JournalEntry entry) {
+        mExecutor.execute(() -> mJournalEntryDao.update(entry));
+    }
+
+    public void delete(JournalEntry entry) {
+        mExecutor.execute(() -> mJournalEntryDao.delete(entry));
+    }
 
     public LiveData<List<JournalEntry>> getAllEntries() {
         return mJournalEntryDao.getAllEntries();
+    }
+    public LiveData<JournalEntry> getEntry(UUID id) {
+        return mJournalEntryDao.getEntry(id);
     }
 
 }

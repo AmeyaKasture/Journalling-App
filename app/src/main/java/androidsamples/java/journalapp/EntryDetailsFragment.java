@@ -1,9 +1,13 @@
 package androidsamples.java.journalapp;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -13,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
@@ -22,16 +27,99 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.UUID;
 
 
 public class EntryDetailsFragment extends Fragment implements DatePickerDialog.OnDateSetListener {
 
   private Button mDateButton, mStartTimeButton, mEndTimeButton, mSaveButton;
   private Calendar mStartTimeCalendar, mEndTimeCalendar, mDateCalendar;
-  private JournalViewModel mJournalViewModel;
+  private EntryDetailsViewModel mEntryDetailsViewModel;
   private EditText mTitleEditText;
   public final String TAG="tagger";
+  private JournalEntry mEntry;
 
+
+
+
+  @Override
+  public void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setHasOptionsMenu(true);
+
+    mEntryDetailsViewModel = new ViewModelProvider(requireActivity()).get(EntryDetailsViewModel.class);
+
+    UUID entryId = UUID.fromString(EntryDetailsFragmentArgs.fromBundle(getArguments()).getEntryId());
+    Log.d(TAG, "Loading entry: " + entryId);
+    mEntryDetailsViewModel.getEntryLiveData().observe(requireActivity(),
+            entry -> {
+              this.mEntry= entry;
+              if (entry != null) updateUI();
+            });
+    mEntryDetailsViewModel.loadEntry(entryId);
+  }
+
+  private void updateUI() {
+    mTitleEditText.setText(mEntry.getTitle());
+
+    if (!mEntry.getDate().isEmpty()) {
+      mDateButton.setText(mEntry.getDate());
+    } else {
+      mDateButton.setText("Date");
+    }
+
+    if (!mEntry.getStartTime().isEmpty()) {
+      mStartTimeButton.setText(mEntry.getStartTime());
+    }
+    else {
+      mStartTimeButton.setText("Start Time");
+    }
+
+    if (!mEntry.getEndTime().isEmpty()) {
+      mEndTimeButton.setText(mEntry.getEndTime());
+    }
+    else {
+      mEndTimeButton.setText("End Time");
+    }
+
+  }
+  @Override
+  public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+    super.onCreateOptionsMenu(menu, inflater);
+    inflater.inflate(R.menu.menu_entry_detail, menu);
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    if (item.getItemId() == R.id.delete) {
+      Log.d(TAG, "Delete button clicked");
+
+      new AlertDialog.Builder(requireActivity())
+              .setTitle("Delete Entry")
+              .setMessage("This entry will be deleted. Proceed?")
+              .setIcon(android.R.drawable.ic_menu_delete)
+              .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                mEntryDetailsViewModel.deleteEntry(mEntry);
+                requireActivity().onBackPressed();
+              })
+              .setNegativeButton(android.R.string.no, null).show();
+
+    }
+
+    else if (item.getItemId() == R.id.share) {
+      Log.d(TAG, "Share button clicked");
+
+      Intent sendIntent = new Intent();
+      sendIntent.setAction(Intent.ACTION_SEND);
+      String text = "Look what I have been up to: " + mEntry.getTitle() + " on " + mEntry.getDate() + ", " + mEntry.getStartTime() + " to " + mEntry.getEndTime();
+      sendIntent.putExtra(Intent.EXTRA_TEXT, text);
+      sendIntent.setType("text/plain");
+      Intent.createChooser(sendIntent,"Share via");
+      startActivity(sendIntent);
+    }
+
+    return super.onOptionsItemSelected(item);
+  }
   @Nullable
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -43,7 +131,7 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
     super.onViewCreated(view, savedInstanceState);
 
     // Initialize ViewModel
-    mJournalViewModel = new ViewModelProvider(this).get(JournalViewModel.class);
+    mEntryDetailsViewModel = new ViewModelProvider(requireActivity()).get(EntryDetailsViewModel.class);
 
     // Initialize UI components
     mDateButton = view.findViewById(R.id.btn_entry_date);
@@ -136,14 +224,16 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
     String formattedEndTime = timeFormat.format(mEndTimeCalendar.getTime());
 
     // Create a new JournalEntry
-    JournalEntry newEntry = new JournalEntry(title, formattedStartTime, formattedEndTime, formattedDate);
+    mEntry.setTitle(title);
+    mEntry.setDate(formattedDate);
+    mEntry.setStartTime(formattedStartTime);
+    mEntry.setEndTime(formattedEndTime);
 
     // Insert the journal entry using the ViewModel
-    mJournalViewModel.insert(newEntry);
+    mEntryDetailsViewModel.saveEntry(mEntry);
     Log.d(TAG,formattedDate);
     // Show a confirmation message
     Toast.makeText(getContext(), "Journal entry saved", Toast.LENGTH_SHORT).show();
-    NavDirections action = EntryDetailsFragmentDirections.saveEntry();
-    Navigation.findNavController(requireView()).navigate(action);
+    requireActivity().onBackPressed();
   }
 }

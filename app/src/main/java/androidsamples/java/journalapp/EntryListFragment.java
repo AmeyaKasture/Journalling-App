@@ -47,10 +47,12 @@ public class EntryListFragment extends Fragment {
     FloatingActionButton addEntryButton = view.findViewById(R.id.btn_add_entry);
 
     addEntryButton.setOnClickListener(v -> {
-      // Create the action
-      NavDirections action = EntryListFragmentDirections.addEntryAction();
+      JournalEntry entry = new JournalEntry("", "", "", "");
+      mJournalViewModel.insert(entry);
 
-      // Navigate using the action
+      EntryListFragmentDirections.AddEntryAction action = EntryListFragmentDirections.addEntryAction();
+      action.setEntryId(entry.getUid().toString());
+
       Navigation.findNavController(view).navigate(action);
     });
 
