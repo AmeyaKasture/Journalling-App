@@ -23,6 +23,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -37,7 +38,19 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
   private EntryDetailsViewModel mEntryDetailsViewModel;
   private EditText mTitleEditText;
   public final String TAG="tagger";
+  private String mSavedDate;
+  private String mSavedStartTime;
+  private String mSavedEndTime;
 //  private JournalEntry mEntry;
+
+  @Override
+  public void onSaveInstanceState(@NonNull Bundle outState) {
+    super.onSaveInstanceState(outState);
+    Log.d(TAG, "Saving the state");
+    outState.putString("saved_date", mDateButton.getText().toString());
+    outState.putString("saved_start_time", mStartTimeButton.getText().toString());
+    outState.putString("saved_end_time", mEndTimeButton.getText().toString());
+  }
 
 
   @Override
@@ -49,21 +62,29 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
 
     UUID entryId = UUID.fromString(EntryDetailsFragmentArgs.fromBundle(getArguments()).getEntryId());
     Log.d(TAG, "Loading entry: " + entryId);
-    mEntryDetailsViewModel.getEntryLiveData().observe(requireActivity(),
-            entry -> {
-              mEntryDetailsViewModel.mEntry= entry;
-              if (entry != null) updateUI();
-            });
+
+    // Observe the LiveData for the JournalEntry
+    mEntryDetailsViewModel.getEntryLiveData().observe(requireActivity(), entry -> {
+      mEntryDetailsViewModel.mEntry = entry; // Update ViewModel with the loaded entry
+      if (entry != null) {
+        Log.d(TAG, "going to ui");
+        updateUI(savedInstanceState); // Only update the UI when the entry is loaded
+      }
+    });
+
+    // Load the entry
     mEntryDetailsViewModel.loadEntry(entryId);
-//    Log.d(TAG, "Loading entry title: " + mEntry.getTitle());
+//    Log.d(TAG, "Loading entry title: " + mEntryDetailsViewModel.mEntry.getTitle());
   }
 
-  private void updateUI() {
-    mTitleEditText.setText(mEntryDetailsViewModel.mEntry.getTitle());
-
-    mDateButton.setText(mEntryDetailsViewModel.mEntry.getDate());
-    mStartTimeButton.setText(mEntryDetailsViewModel.mEntry.getStartTime());
-    mEndTimeButton.setText(mEntryDetailsViewModel.mEntry.getEndTime());
+  private void updateUI(Bundle savedInstanceState) {
+    Log.d(TAG, "into the UI: ");
+    if (mEntryDetailsViewModel.mEntry != null && savedInstanceState == null) {
+      mTitleEditText.setText(mEntryDetailsViewModel.mEntry.getTitle());
+      mDateButton.setText(mEntryDetailsViewModel.mEntry.getDate());
+      mStartTimeButton.setText(mEntryDetailsViewModel.mEntry.getStartTime());
+      mEndTimeButton.setText(mEntryDetailsViewModel.mEntry.getEndTime());
+    }
 
 
   }
@@ -127,7 +148,33 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
     mStartTimeCalendar = Calendar.getInstance();
     mEndTimeCalendar = Calendar.getInstance();
     mDateCalendar = Calendar.getInstance();
-//    updateUI();
+
+    if (savedInstanceState != null) {
+      // Restore saved values
+      mSavedDate = savedInstanceState.getString("saved_date");
+      mSavedStartTime = savedInstanceState.getString("saved_start_time");
+      mSavedEndTime = savedInstanceState.getString("saved_end_time");
+      Log.d(TAG, "In the bundle");
+      // Set the buttons with the restored values
+      mDateButton.setText(mSavedDate);
+      mStartTimeButton.setText(mSavedStartTime);
+      mEndTimeButton.setText(mSavedEndTime);
+
+      try{
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        Date startDate = timeFormat.parse(mSavedStartTime);
+        Date endDate = timeFormat.parse(mSavedEndTime);
+        mStartTimeCalendar.setTime(startDate);
+        mEndTimeCalendar.setTime(endDate);
+      }
+      catch (ParseException e) {
+        e.printStackTrace();
+        Toast.makeText(getContext(), "Invalid time format", Toast.LENGTH_SHORT).show();
+      }
+
+    }
+
+
     // Date picker for the date button
     mDateButton.setOnClickListener(v -> {
       DatePickerFragment datePickerFragment = DatePickerFragment.newInstance(new Date(), this);
@@ -188,7 +235,7 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
   // Method to perform sanity checks and save the journal entry
   private void saveJournalEntry() {
     String title = mTitleEditText.getText().toString().trim(); // In a real app, you'd probably have an EditText for the title
-    Log.d(TAG, "saveJournalEntry:"+mEndTimeButton.getText().toString().trim());
+//    Log.d(TAG, "saveJournalEntry:"+mEndTimeButton.getText().toString().trim());
     // Check if date, start time, and end time are set
     if (title.equals("")||mDateButton.getText().toString().equals("Date") ||
             mStartTimeButton.getText().toString().equals("Start Time") ||
@@ -198,7 +245,7 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
     }
 
     // Sanity check: ensure end time is after start time
-    if ((mStartTimeButton.getText().toString().equals("Start Time")^ mEndTimeButton.getText().toString().equals("End Time")) || mEndTimeCalendar.before(mStartTimeCalendar)) {
+    if ( mEndTimeCalendar.before(mStartTimeCalendar)) {
       Toast.makeText(getContext(), "End time must be after start time", Toast.LENGTH_SHORT).show();
       return;
     }
