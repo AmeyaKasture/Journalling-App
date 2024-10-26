@@ -40,18 +40,29 @@ public class JournalEntryListAdapter
     }
 
     @Override
-    public void onBindViewHolder(@NonNull EntryViewHolder holder,
-                                 int position) {
+    public void onBindViewHolder(@NonNull EntryViewHolder holder, int position) {
         if (mEntries != null) {
             JournalEntry current = mEntries.get(position);
-            holder.mEntry=current;
+            holder.mEntry = current;
+
+            // Set text for each field
             holder.mTxtTitle.setText(current.getTitle());
             holder.mTxtStartTime.setText(current.getStartTime());
             holder.mTxtEndTime.setText(current.getEndTime());
             holder.mTxtDate.setText(current.getDate());
+
+            // Set content descriptions for accessibility
+            holder.mTxtTitle.setContentDescription("Title: " + current.getTitle());
+            holder.mTxtStartTime.setContentDescription("Start Time: " + current.getStartTime());
+            holder.mTxtEndTime.setContentDescription("End Time: " + current.getEndTime());
+            holder.mTxtDate.setContentDescription("Date: " + current.getDate());
+
+            // Optionally, set a comprehensive description on the itemView
+            holder.itemView.setContentDescription("Journal entry titled " + current.getTitle()
+                    + ", starts at " + current.getStartTime() + ", ends at " + current.getEndTime()
+                    + ", on date " + current.getDate());
         }
     }
-
     @Override
     public int getItemCount() {
         if (mEntries != null) {
@@ -88,21 +99,6 @@ public class JournalEntryListAdapter
             Log.d(TAG, "launchJournalEntryFragment with Entry: " + mEntry.getTitle());
             EntryListFragmentDirections.AddEntryAction action = EntryListFragmentDirections.addEntryAction();
             action.setEntryId(mEntry.getUid().toString());
-
-//            @SuppressLint("SimpleDateFormat") SimpleDateFormat formatter = new SimpleDateFormat("E, MMM dd, yyyy");
-//            try {
-//                Date date = formatter.parse(mEntry.getDate());
-//                Calendar cal = Calendar.getInstance();
-//                assert date != null;
-//                cal.setTime(date);
-//
-//                action.setSelectedDate(cal.get(Calendar.DATE));
-//                action.setSelectedMonth(cal.get(Calendar.MONTH));
-//                action.setSelectedYear(cal.get(Calendar.YEAR));
-//            } catch (ParseException e) {
-//                Log.d(TAG, "error");
-////                e.printStackTrace();
-//            }
 
             Navigation.findNavController(v).navigate(action);
         }

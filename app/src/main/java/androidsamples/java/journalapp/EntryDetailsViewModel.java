@@ -12,7 +12,7 @@ import java.util.UUID;
 public class EntryDetailsViewModel extends ViewModel {
     private static final String TAG = "EntryDetailsViewModel";
     private final JournalRepository mRepository;
-
+    public JournalEntry mEntry;
     private final MutableLiveData<UUID> entryIdLiveData = new MutableLiveData<>();
 
     public EntryDetailsViewModel() {
