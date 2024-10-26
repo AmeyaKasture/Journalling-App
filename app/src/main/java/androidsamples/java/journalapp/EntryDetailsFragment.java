@@ -169,7 +169,6 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
       }
       catch (ParseException e) {
         e.printStackTrace();
-        Toast.makeText(getContext(), "Invalid time format", Toast.LENGTH_SHORT).show();
       }
 
     }
