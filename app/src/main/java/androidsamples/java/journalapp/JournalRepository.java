@@ -32,6 +32,20 @@ public class JournalRepository {
         return sInstance;
     }
 
+    public interface InsertCallback {
+        void onInsert(UUID entryId);
+    }
+
+    // Modified insert method to include a callback for retrieving the entry ID after insertion
+    public void insert(JournalEntry entry, InsertCallback callback) {
+        mExecutor.execute(() -> {
+            mJournalEntryDao.insert(entry); // Insert entry
+            UUID entryId = entry.getUid(); // Retrieve the entry ID
+            callback.onInsert(entryId); // Callback with the ID
+        });
+    }
+
+
     public void insert(JournalEntry entry) {
         mExecutor.execute(() -> mJournalEntryDao.insert(entry));
     }

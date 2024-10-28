@@ -43,17 +43,13 @@ public class EntryListFragment extends Fragment {
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                            Bundle savedInstanceState) {
-    View view=inflater.inflate(R.layout.fragment_entry_list, container, false);
+    view = inflater.inflate(R.layout.fragment_entry_list, container, false); // Avoid re-declaring `view`
+
     FloatingActionButton addEntryButton = view.findViewById(R.id.btn_add_entry);
 
     addEntryButton.setOnClickListener(v -> {
       JournalEntry entry = new JournalEntry("", "Start Time", "End Time", "Date");
       mJournalViewModel.insert(entry);
-
-      EntryListFragmentDirections.AddEntryAction action = EntryListFragmentDirections.addEntryAction();
-      action.setEntryId(entry.getUid().toString());
-
-      Navigation.findNavController(view).navigate(action);
     });
 
     RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
@@ -61,16 +57,37 @@ public class EntryListFragment extends Fragment {
     recyclerView.setAdapter(adapter);
     recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
-    mJournalViewModel = new ViewModelProvider(this).get(JournalViewModel.class);
-
-    // Use getViewLifecycleOwner() to observe LiveData safely
     mJournalViewModel.getAllEntries().observe(getViewLifecycleOwner(), entries -> {
-      // Update the adapter when the data changes
       adapter.setEntries(entries);
     });
 
     return view;
   }
+
+  @Override
+  public void onViewCreated(@NonNull View view, @NonNull Bundle savedInstanceState) {
+    super.onViewCreated(view, savedInstanceState);
+
+    mJournalViewModel.getLastInsertedEntryId().observe(getViewLifecycleOwner(), entryId -> {
+      if (entryId != null) {
+        EntryListFragmentDirections.AddEntryAction action =
+                EntryListFragmentDirections.addEntryAction();
+        action.setEntryId(entryId);
+
+        // Avoid re-navigating on rotation by checking if navigation has already occurred
+        try {
+          Navigation.findNavController(view).navigate(action);
+        } catch (IllegalArgumentException e) {
+          Log.e(TAG, "Navigation action already handled.");
+        }
+
+        mJournalViewModel.clearLastInsertedEntryId();
+      }
+    });
+  }
+
+
+
 
   @Override
   public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
