@@ -15,6 +15,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -41,6 +42,7 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
   private String mSavedDate;
   private String mSavedStartTime;
   private String mSavedEndTime;
+  private View view;
 //  private JournalEntry mEntry;
 
   @Override
@@ -105,7 +107,7 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
               .setIcon(android.R.drawable.ic_menu_delete)
               .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                 mEntryDetailsViewModel.deleteEntry(mEntryDetailsViewModel.mEntry);
-                requireActivity().onBackPressed();
+                Navigation.findNavController(view).navigate(EntryDetailsFragmentDirections.simulateBack());
               })
               .setNegativeButton(android.R.string.no, null).show();
 
@@ -128,7 +130,7 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
   @Nullable
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-    return inflater.inflate(R.layout.fragment_entry_details, container, false);
+    return view=inflater.inflate(R.layout.fragment_entry_details, container, false);
   }
 
   @Override
@@ -173,6 +175,27 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
 
     }
 
+    requireActivity().getOnBackPressedDispatcher().addCallback(
+            getViewLifecycleOwner(),
+            new OnBackPressedCallback(true) {
+              @Override
+              public void handleOnBackPressed() {
+                // Show AlertDialog before performing the back action
+                new AlertDialog.Builder(requireActivity())
+                        .setTitle("Delete Entry")
+                        .setMessage("This entry will be deleted. Proceed?")
+                        .setIcon(android.R.drawable.ic_menu_delete)
+                        .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                          // Delete entry and go back
+                          mEntryDetailsViewModel.deleteEntry(mEntryDetailsViewModel.mEntry);
+                          setEnabled(false); // Disable callback to allow normal back press behavior
+                          Navigation.findNavController(view).navigate(EntryDetailsFragmentDirections.simulateBack());
+                        })
+                        .setNegativeButton(android.R.string.no, null)
+                        .show();
+              }
+            }
+    );
 
     // Date picker for the date button
     mDateButton.setOnClickListener(v -> {
@@ -268,6 +291,6 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
     Log.d(TAG,formattedDate);
     // Show a confirmation message
     Toast.makeText(getContext(), "Journal entry saved", Toast.LENGTH_SHORT).show();
-    requireActivity().onBackPressed();
+    Navigation.findNavController(view).navigate(EntryDetailsFragmentDirections.simulateBack());
   }
 }

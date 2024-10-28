@@ -21,6 +21,9 @@
       android:name="androidsamples.java.journalapp.EntryDetailsFragment"
       android:label="fragment_entry_details"
       tools:layout="@layout/fragment_entry_details">
+    <action
+        android:id="@+id/simulateBack"
+        app:destination="@id/entryListFragment" />
     <argument
         android:name="entryId"
         android:defaultValue='""'
