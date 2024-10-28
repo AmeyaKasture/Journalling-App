@@ -45,14 +45,35 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
   private View view;
 //  private JournalEntry mEntry;
 
+//  @Override
+//  public void onSaveInstanceState(@NonNull Bundle outState) {
+//    super.onSaveInstanceState(outState);
+//    Log.d(TAG, "Saving the state");
+//    outState.putString("saved_date", mDateButton.getText().toString());
+//    outState.putString("saved_start_time", mStartTimeButton.getText().toString());
+//    outState.putString("saved_end_time", mEndTimeButton.getText().toString());
+//  }
+
   @Override
-  public void onSaveInstanceState(@NonNull Bundle outState) {
-    super.onSaveInstanceState(outState);
-    Log.d(TAG, "Saving the state");
-    outState.putString("saved_date", mDateButton.getText().toString());
-    outState.putString("saved_start_time", mStartTimeButton.getText().toString());
-    outState.putString("saved_end_time", mEndTimeButton.getText().toString());
+  public void onPause() {
+    super.onPause();
+    saveCurrentState();
   }
+
+  private void saveCurrentState() {
+    String title = mTitleEditText.getText().toString().trim();
+    String date = mDateButton.getText().toString();
+    String startTime = mStartTimeButton.getText().toString();
+    String endTime = mEndTimeButton.getText().toString();
+    Log.d(TAG, "saving date: "+ date);
+    mEntryDetailsViewModel.mEntry.setTitle(title);
+    mEntryDetailsViewModel.mEntry.setDate(date);
+    mEntryDetailsViewModel.mEntry.setStartTime(startTime);
+    mEntryDetailsViewModel.mEntry.setEndTime(endTime);
+
+    mEntryDetailsViewModel.saveEntry(mEntryDetailsViewModel.mEntry);
+  }
+
 
 
   @Override
@@ -70,7 +91,7 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
       mEntryDetailsViewModel.mEntry = entry; // Update ViewModel with the loaded entry
       if (entry != null) {
         Log.d(TAG, "going to ui");
-        updateUI(savedInstanceState); // Only update the UI when the entry is loaded
+        updateUI(); // Only update the UI when the entry is loaded
       }
     });
 
@@ -79,9 +100,9 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
 //    Log.d(TAG, "Loading entry title: " + mEntryDetailsViewModel.mEntry.getTitle());
   }
 
-  private void updateUI(Bundle savedInstanceState) {
+  private void updateUI() {
     Log.d(TAG, "into the UI: ");
-    if (mEntryDetailsViewModel.mEntry != null && savedInstanceState == null) {
+    if (mEntryDetailsViewModel.mEntry != null) {
       mTitleEditText.setText(mEntryDetailsViewModel.mEntry.getTitle());
       mDateButton.setText(mEntryDetailsViewModel.mEntry.getDate());
       mStartTimeButton.setText(mEntryDetailsViewModel.mEntry.getStartTime());
@@ -151,29 +172,7 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
     mEndTimeCalendar = Calendar.getInstance();
     mDateCalendar = Calendar.getInstance();
 
-    if (savedInstanceState != null) {
-      // Restore saved values
-      mSavedDate = savedInstanceState.getString("saved_date");
-      mSavedStartTime = savedInstanceState.getString("saved_start_time");
-      mSavedEndTime = savedInstanceState.getString("saved_end_time");
-      Log.d(TAG, "In the bundle");
-      // Set the buttons with the restored values
-      mDateButton.setText(mSavedDate);
-      mStartTimeButton.setText(mSavedStartTime);
-      mEndTimeButton.setText(mSavedEndTime);
 
-      try{
-        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-        Date startDate = timeFormat.parse(mSavedStartTime);
-        Date endDate = timeFormat.parse(mSavedEndTime);
-        mStartTimeCalendar.setTime(startDate);
-        mEndTimeCalendar.setTime(endDate);
-      }
-      catch (ParseException e) {
-        e.printStackTrace();
-      }
-
-    }
 
     requireActivity().getOnBackPressedDispatcher().addCallback(
             getViewLifecycleOwner(),
@@ -265,7 +264,18 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
       Toast.makeText(getContext(), "Please select date, start time, and end time", Toast.LENGTH_SHORT).show();
       return;
     }
-
+    try{
+      mSavedStartTime=mStartTimeButton.getText().toString();
+      mSavedEndTime=mEndTimeButton.getText().toString();
+      SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+      Date startDate = timeFormat.parse(mSavedStartTime);
+      Date endDate = timeFormat.parse(mSavedEndTime);
+      mStartTimeCalendar.setTime(startDate);
+      mEndTimeCalendar.setTime(endDate);
+    }
+    catch (ParseException e) {
+      e.printStackTrace();
+    }
     // Sanity check: ensure end time is after start time
     if ( mEndTimeCalendar.before(mStartTimeCalendar)) {
       Toast.makeText(getContext(), "End time must be after start time", Toast.LENGTH_SHORT).show();

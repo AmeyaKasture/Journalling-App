@@ -47,7 +47,7 @@ public class EntryListFragment extends Fragment {
     FloatingActionButton addEntryButton = view.findViewById(R.id.btn_add_entry);
 
     addEntryButton.setOnClickListener(v -> {
-      JournalEntry entry = new JournalEntry("", "End Time", "Start Time", "Date");
+      JournalEntry entry = new JournalEntry("", "Start Time", "End Time", "Date");
       mJournalViewModel.insert(entry);
 
       EntryListFragmentDirections.AddEntryAction action = EntryListFragmentDirections.addEntryAction();
