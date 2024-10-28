@@ -43,6 +43,7 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
   private String mSavedStartTime;
   private String mSavedEndTime;
   private View view;
+  private OnBackPressedCallback customBackCallback;
 //  private JournalEntry mEntry;
 
 //  @Override
@@ -128,7 +129,13 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
               .setIcon(android.R.drawable.ic_menu_delete)
               .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
                 mEntryDetailsViewModel.deleteEntry(mEntryDetailsViewModel.mEntry);
-                Navigation.findNavController(view).navigate(EntryDetailsFragmentDirections.simulateBack());
+                customBackCallback.setEnabled(false);
+
+                // Navigate up using default navigation
+                Navigation.findNavController(view).navigateUp();
+
+                // Re-enable the callback after navigation completes
+                customBackCallback.setEnabled(true);
               })
               .setNegativeButton(android.R.string.no, null).show();
 
@@ -162,11 +169,11 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
 //    mEntryDetailsViewModel = new ViewModelProvider(requireActivity()).get(EntryDetailsViewModel.class);
 
     // Initialize UI components
-    mDateButton = view.findViewById(R.id.btn_entry_date);
-    mStartTimeButton = view.findViewById(R.id.btn_start_time);
-    mEndTimeButton = view.findViewById(R.id.btn_end_time);
-    mSaveButton = view.findViewById(R.id.btn_save);
-    mTitleEditText = view.findViewById(R.id.edit_title);
+    mDateButton = requireView().findViewById(R.id.btn_entry_date);
+    mStartTimeButton = requireView().findViewById(R.id.btn_start_time);
+    mEndTimeButton = requireView().findViewById(R.id.btn_end_time);
+    mSaveButton = requireView().findViewById(R.id.btn_save);
+    mTitleEditText = requireView().findViewById(R.id.edit_title);
 
     mStartTimeCalendar = Calendar.getInstance();
     mEndTimeCalendar = Calendar.getInstance();
@@ -174,27 +181,31 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
 
 
 
-    requireActivity().getOnBackPressedDispatcher().addCallback(
-            getViewLifecycleOwner(),
-            new OnBackPressedCallback(true) {
-              @Override
-              public void handleOnBackPressed() {
-                // Show AlertDialog before performing the back action
-                new AlertDialog.Builder(requireActivity())
-                        .setTitle("Delete Entry")
-                        .setMessage("This entry will be deleted. Proceed?")
-                        .setIcon(android.R.drawable.ic_menu_delete)
-                        .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                          // Delete entry and go back
-                          mEntryDetailsViewModel.deleteEntry(mEntryDetailsViewModel.mEntry);
-                          setEnabled(false); // Disable callback to allow normal back press behavior
-                          Navigation.findNavController(view).navigate(EntryDetailsFragmentDirections.simulateBack());
-                        })
-                        .setNegativeButton(android.R.string.no, null)
-                        .show();
-              }
-            }
-    );
+    customBackCallback = new OnBackPressedCallback(true) {
+      @Override
+      public void handleOnBackPressed() {
+        // Show the dialog when the user presses the back button
+        new AlertDialog.Builder(requireActivity())
+                .setTitle("Delete Entry")
+                .setMessage("This entry will be deleted. Proceed?")
+                .setIcon(android.R.drawable.ic_menu_delete)
+                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                  mEntryDetailsViewModel.deleteEntry(mEntryDetailsViewModel.mEntry);
+                  setEnabled(false); // Temporarily disable to allow normal back press
+                  requireActivity().onBackPressed(); // Perform normal back press
+                  setEnabled(true); // Re-enable callback
+                })
+                .setNegativeButton(android.R.string.no, null)
+                .show();
+      }
+    };
+
+    // Add the callback to the OnBackPressedDispatcher
+    requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), customBackCallback);
+
+    // Add the callback to the dispatcher
+    requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), customBackCallback);
+
 
     // Date picker for the date button
     mDateButton.setOnClickListener(v -> {
@@ -301,6 +312,16 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
     Log.d(TAG,formattedDate);
     // Show a confirmation message
     Toast.makeText(getContext(), "Journal entry saved", Toast.LENGTH_SHORT).show();
-    Navigation.findNavController(view).navigate(EntryDetailsFragmentDirections.simulateBack());
+//    requireActivity().onBackPressed();
+    customBackCallback.setEnabled(false);
+
+    // Navigate up using default navigation
+    Navigation.findNavController(view).navigateUp();
+
+    // Re-enable the callback after navigation completes
+    customBackCallback.setEnabled(true);
+
   }
 }
+
+

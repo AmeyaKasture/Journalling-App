@@ -32,18 +32,26 @@ public class EntryListFragment extends Fragment {
   private JournalViewModel mJournalViewModel;
   private static final String TAG = "EntryListFragment";
   private View view;
+  private boolean isNavigating = false;
+  @Override
+  public void onAttach(@NonNull Context context) {
+    super.onAttach(context);
+    Log.d(TAG, "onAttach called");
+  }
+
   @Override
   public void onCreate(Bundle savedInstanceState) {
+    Log.d(TAG, "onCreate called");
+    super.onCreate(savedInstanceState);
     mJournalViewModel = new ViewModelProvider(this).get(JournalViewModel.class);
     setHasOptionsMenu(true);
-    super.onCreate(savedInstanceState);
-
   }
 
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                            Bundle savedInstanceState) {
-    view = inflater.inflate(R.layout.fragment_entry_list, container, false); // Avoid re-declaring `view`
+    Log.d(TAG, "onCreateView called");
+    view = inflater.inflate(R.layout.fragment_entry_list, container, false);
 
     FloatingActionButton addEntryButton = view.findViewById(R.id.btn_add_entry);
 
@@ -67,14 +75,14 @@ public class EntryListFragment extends Fragment {
   @Override
   public void onViewCreated(@NonNull View view, @NonNull Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
+    Log.d(TAG, "onViewCreated called");
 
     mJournalViewModel.getLastInsertedEntryId().observe(getViewLifecycleOwner(), entryId -> {
-      if (entryId != null) {
-        EntryListFragmentDirections.AddEntryAction action =
-                EntryListFragmentDirections.addEntryAction();
+      if (entryId != null && !isNavigating) {
+        isNavigating = true;
+        EntryListFragmentDirections.AddEntryAction action = EntryListFragmentDirections.addEntryAction();
         action.setEntryId(entryId);
 
-        // Avoid re-navigating on rotation by checking if navigation has already occurred
         try {
           Navigation.findNavController(view).navigate(action);
         } catch (IllegalArgumentException e) {
@@ -85,6 +93,57 @@ public class EntryListFragment extends Fragment {
       }
     });
   }
+;
+
+  @Override
+  public void onActivityCreated(Bundle savedInstanceState) {
+    super.onActivityCreated(savedInstanceState);
+    Log.d(TAG, "onActivityCreated called");
+  }
+
+  @Override
+  public void onStart() {
+    super.onStart();
+    Log.d(TAG, "onStart called");
+  }
+
+  @Override
+  public void onResume() {
+    super.onResume();
+    Log.d(TAG, "onResume called");
+  }
+
+  @Override
+  public void onPause() {
+    super.onPause();
+    Log.d(TAG, "onPause called");
+    isNavigating = false;
+  }
+
+  @Override
+  public void onStop() {
+    super.onStop();
+    Log.d(TAG, "onStop called");
+  }
+
+  @Override
+  public void onDestroyView() {
+    super.onDestroyView();
+    Log.d(TAG, "onDestroyView called");
+  }
+
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    Log.d(TAG, "onDestroy called");
+  }
+
+  @Override
+  public void onDetach() {
+    super.onDetach();
+    Log.d(TAG, "onDetach called");
+  }
+
 
 
 
@@ -111,14 +170,6 @@ public class EntryListFragment extends Fragment {
     startActivity(intent);
   }
 
-  @Override
-  public void onAttach(@NonNull Context context) {
-    super.onAttach(context);
-  }
 
-  @Override
-  public void onDetach() {
-    super.onDetach();
-  }
 
 }
