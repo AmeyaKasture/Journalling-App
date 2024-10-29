@@ -54,7 +54,7 @@ public class EntryListFragment extends Fragment {
     view = inflater.inflate(R.layout.fragment_entry_list, container, false);
 
     FloatingActionButton addEntryButton = view.findViewById(R.id.btn_add_entry);
-
+    addEntryButton.setContentDescription("Add new journal entry"); // TalkBack description
     addEntryButton.setOnClickListener(v -> {
       JournalEntry entry = new JournalEntry("", "Start Time", "End Time", "Date");
       mJournalViewModel.insert(entry);
@@ -64,6 +64,7 @@ public class EntryListFragment extends Fragment {
     JournalEntryListAdapter adapter = new JournalEntryListAdapter(view.getContext());
     recyclerView.setAdapter(adapter);
     recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
+    recyclerView.setContentDescription("List of journal entries"); // TalkBack description
 
     mJournalViewModel.getAllEntries().observe(getViewLifecycleOwner(), entries -> {
       adapter.setEntries(entries);
@@ -152,6 +153,7 @@ public class EntryListFragment extends Fragment {
   public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
     super.onCreateOptionsMenu(menu, inflater);
     inflater.inflate(R.menu.menu_entry_list, menu);
+
   }
 
   @Override

@@ -44,6 +44,11 @@ public class TimePickerFragment extends DialogFragment {
     int minute = calendar.get(Calendar.MINUTE);
 
     // Create a new instance of TimePickerDialog and return it
-    return new TimePickerDialog(requireContext(), mListener, hour, minute, true);
+    TimePickerDialog dialog = new TimePickerDialog(requireContext(), mListener, hour, minute, true);
+
+    // Set a TalkBack content description for the dialog
+    dialog.setTitle("Select time"); // Short description for screen readers
+
+    return dialog;
   }
 }

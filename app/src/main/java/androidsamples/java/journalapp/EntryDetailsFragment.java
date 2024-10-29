@@ -175,6 +175,13 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
     mSaveButton = requireView().findViewById(R.id.btn_save);
     mTitleEditText = requireView().findViewById(R.id.edit_title);
 
+    // Set content descriptions for accessibility
+    mDateButton.setContentDescription("Select entry date");
+    mStartTimeButton.setContentDescription("Select start time");
+    mEndTimeButton.setContentDescription("Select end time");
+    mSaveButton.setContentDescription("Save journal entry");
+    mTitleEditText.setContentDescription("Entry title");
+
     mStartTimeCalendar = Calendar.getInstance();
     mEndTimeCalendar = Calendar.getInstance();
     mDateCalendar = Calendar.getInstance();

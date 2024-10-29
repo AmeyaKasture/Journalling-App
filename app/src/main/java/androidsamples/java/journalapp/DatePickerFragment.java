@@ -49,6 +49,11 @@ public class DatePickerFragment extends DialogFragment {
     int day = calendar.get(Calendar.DAY_OF_MONTH);
 
     // Create and return the DatePickerDialog
-    return new DatePickerDialog(requireContext(), mListener, year, month, day);
+    DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(), mListener, year, month, day);
+
+    // Set TalkBack description for the DatePicker dialog
+    datePickerDialog.setTitle("Select date"); // Title can be read by TalkBack
+
+    return datePickerDialog;
   }
 }
