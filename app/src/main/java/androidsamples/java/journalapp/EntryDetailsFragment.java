@@ -180,7 +180,7 @@ public class EntryDetailsFragment extends Fragment implements DatePickerDialog.O
     mStartTimeButton.setContentDescription("Select start time");
     mEndTimeButton.setContentDescription("Select end time");
     mSaveButton.setContentDescription("Save journal entry");
-    mTitleEditText.setContentDescription("Entry title");
+//    mTitleEditText.setContentDescription("Entry title");
 
     mStartTimeCalendar = Calendar.getInstance();
     mEndTimeCalendar = Calendar.getInstance();
