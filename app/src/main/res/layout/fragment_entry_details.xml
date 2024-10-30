@@ -28,6 +28,7 @@
       android:inputType="text"
       android:minHeight="48dp"
       android:textAlignment="center"
+      android:contentDescription="Enter the title for your journal entry"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@+id/record_entry" />
