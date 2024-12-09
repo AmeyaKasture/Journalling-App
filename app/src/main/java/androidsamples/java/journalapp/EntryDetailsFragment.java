@@ -1,6 +1,6 @@
 package androidsamples.java.journalapp;
 
-import android.app.DatePickerDialog;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,324 +11,204 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ShareActionProvider;
 import android.widget.Toast;
-
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
+import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
 import java.util.UUID;
 
+import androidsamples.java.journalapp.database.JournalEntry;
+import androidsamples.java.journalapp.database.JournalViewModel;
 
-public class EntryDetailsFragment extends Fragment implements DatePickerDialog.OnDateSetListener {
+/**
+ * A simple {@link Fragment} subclass.
+ * Use the {@link EntryDetailsFragment # newInstance} factory method to
+ * create an instance of this fragment.
+ */
+public class EntryDetailsFragment extends Fragment {
 
-  private Button mDateButton, mStartTimeButton, mEndTimeButton, mSaveButton;
-  private Calendar mStartTimeCalendar, mEndTimeCalendar, mDateCalendar;
-  private EntryDetailsViewModel mEntryDetailsViewModel;
-  private EditText mTitleEditText;
-  public final String TAG="tagger";
-  private String mSavedDate;
-  private String mSavedStartTime;
-  private String mSavedEndTime;
-  private View view;
-  private OnBackPressedCallback customBackCallback;
-//  private JournalEntry mEntry;
-
-//  @Override
-//  public void onSaveInstanceState(@NonNull Bundle outState) {
-//    super.onSaveInstanceState(outState);
-//    Log.d(TAG, "Saving the state");
-//    outState.putString("saved_date", mDateButton.getText().toString());
-//    outState.putString("saved_start_time", mStartTimeButton.getText().toString());
-//    outState.putString("saved_end_time", mEndTimeButton.getText().toString());
-//  }
+  private Button btnDate;
+  private Button btnStartTime;
+  private Button btnEndTime;
+  private Button btnSave;
+  private EditText mEditText;
+  private SharedViewModel sVM;
+  private JournalViewModel mJournalViewModel;
+  private JournalEntry mEntry;
+  private static final String TAG = "EntryDetailsFragment";
 
   @Override
-  public void onPause() {
-    super.onPause();
-    saveCurrentState();
-  }
-
-  private void saveCurrentState() {
-    String title = mTitleEditText.getText().toString().trim();
-    String date = mDateButton.getText().toString();
-    String startTime = mStartTimeButton.getText().toString();
-    String endTime = mEndTimeButton.getText().toString();
-    Log.d(TAG, "saving date: "+ date);
-    mEntryDetailsViewModel.mEntry.setTitle(title);
-    mEntryDetailsViewModel.mEntry.setDate(date);
-    mEntryDetailsViewModel.mEntry.setStartTime(startTime);
-    mEntryDetailsViewModel.mEntry.setEndTime(endTime);
-
-    mEntryDetailsViewModel.saveEntry(mEntryDetailsViewModel.mEntry);
-  }
-
-
-
-  @Override
-  public void onCreate(@Nullable Bundle savedInstanceState) {
+  public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    sVM = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+    mJournalViewModel = new ViewModelProvider(this).get(JournalViewModel.class);
     setHasOptionsMenu(true);
-
-    mEntryDetailsViewModel = new ViewModelProvider(requireActivity()).get(EntryDetailsViewModel.class);
-
-    UUID entryId = UUID.fromString(EntryDetailsFragmentArgs.fromBundle(getArguments()).getEntryId());
-    Log.d(TAG, "Loading entry: " + entryId);
-
-    // Observe the LiveData for the JournalEntry
-    mEntryDetailsViewModel.getEntryLiveData().observe(requireActivity(), entry -> {
-      mEntryDetailsViewModel.mEntry = entry; // Update ViewModel with the loaded entry
-      if (entry != null) {
-        Log.d(TAG, "going to ui");
-        updateUI(); // Only update the UI when the entry is loaded
-      }
-    });
-
-    // Load the entry
-    mEntryDetailsViewModel.loadEntry(entryId);
-//    Log.d(TAG, "Loading entry title: " + mEntryDetailsViewModel.mEntry.getTitle());
   }
 
-  private void updateUI() {
-    Log.d(TAG, "into the UI: ");
-    if (mEntryDetailsViewModel.mEntry != null) {
-      mTitleEditText.setText(mEntryDetailsViewModel.mEntry.getTitle());
-      mDateButton.setText(mEntryDetailsViewModel.mEntry.getDate());
-      mStartTimeButton.setText(mEntryDetailsViewModel.mEntry.getStartTime());
-      mEndTimeButton.setText(mEntryDetailsViewModel.mEntry.getEndTime());
-    }
-
-
-  }
   @Override
-  public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+  public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater){
+    inflater.inflate(R.menu.entry_details_menu, menu);
     super.onCreateOptionsMenu(menu, inflater);
-    inflater.inflate(R.menu.menu_entry_detail, menu);
   }
 
-  @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    if (item.getItemId() == R.id.delete) {
-      Log.d(TAG, "Delete button clicked");
-
-      new AlertDialog.Builder(requireActivity())
-              .setTitle("Delete Entry")
-              .setMessage("This entry will be deleted. Proceed?")
-              .setIcon(android.R.drawable.ic_menu_delete)
-              .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                mEntryDetailsViewModel.deleteEntry(mEntryDetailsViewModel.mEntry);
-                customBackCallback.setEnabled(false);
-
-                // Navigate up using default navigation
-                Navigation.findNavController(view).navigateUp();
-
-                // Re-enable the callback after navigation completes
-                customBackCallback.setEnabled(true);
-              })
-              .setNegativeButton(android.R.string.no, null).show();
-
-    }
-
-    else if (item.getItemId() == R.id.share) {
-      Log.d(TAG, "Share button clicked");
-
-      Intent sendIntent = new Intent();
-      sendIntent.setAction(Intent.ACTION_SEND);
-      String text = "Look what I have been up to: " + mEntryDetailsViewModel.mEntry.getTitle() + " on " + mEntryDetailsViewModel.mEntry.getDate() + ", " + mEntryDetailsViewModel.mEntry.getStartTime() + " to " + mEntryDetailsViewModel.mEntry.getEndTime();
-      sendIntent.putExtra(Intent.EXTRA_TEXT, text);
-      sendIntent.setType("text/plain");
-      Intent.createChooser(sendIntent,"Share via");
-      startActivity(sendIntent);
-    }
-
-    return super.onOptionsItemSelected(item);
-  }
   @Nullable
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-    return view=inflater.inflate(R.layout.fragment_entry_details, container, false);
+    return inflater.inflate(R.layout.fragment_entry_details, container, false);
   }
 
   @Override
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
 
-    // Initialize ViewModel
-//    mEntryDetailsViewModel = new ViewModelProvider(requireActivity()).get(EntryDetailsViewModel.class);
+    // Initialising UI elements
+    btnDate = view.findViewById(R.id.btn_entry_date);
+    btnStartTime = view.findViewById(R.id.btn_start_time);
+    btnEndTime = view.findViewById(R.id.btn_end_time);
+    btnSave = view.findViewById(R.id.btn_save);
+    mEditText = view.findViewById(R.id.edit_title);
 
-    // Initialize UI components
-    mDateButton = requireView().findViewById(R.id.btn_entry_date);
-    mStartTimeButton = requireView().findViewById(R.id.btn_start_time);
-    mEndTimeButton = requireView().findViewById(R.id.btn_end_time);
-    mSaveButton = requireView().findViewById(R.id.btn_save);
-    mTitleEditText = requireView().findViewById(R.id.edit_title);
-
-    // Set content descriptions for accessibility
-    mDateButton.setContentDescription("Select entry date");
-    mStartTimeButton.setContentDescription("Select start time");
-    mEndTimeButton.setContentDescription("Select end time");
-    mSaveButton.setContentDescription("Save journal entry");
-//    mTitleEditText.setContentDescription("Entry title");
-
-    mStartTimeCalendar = Calendar.getInstance();
-    mEndTimeCalendar = Calendar.getInstance();
-    mDateCalendar = Calendar.getInstance();
-
-
-
-    customBackCallback = new OnBackPressedCallback(true) {
-      @Override
-      public void handleOnBackPressed() {
-        // Show the dialog when the user presses the back button
-        new AlertDialog.Builder(requireActivity())
-                .setTitle("Delete Entry")
-                .setMessage("This entry will be deleted. Proceed?")
-                .setIcon(android.R.drawable.ic_menu_delete)
-                .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
-                  mEntryDetailsViewModel.deleteEntry(mEntryDetailsViewModel.mEntry);
-                  setEnabled(false); // Temporarily disable to allow normal back press
-                  requireActivity().onBackPressed(); // Perform normal back press
-                  setEnabled(true); // Re-enable callback
-                })
-                .setNegativeButton(android.R.string.no, null)
-                .show();
-      }
-    };
-
-    // Add the callback to the OnBackPressedDispatcher
-    requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), customBackCallback);
-
-    // Add the callback to the dispatcher
-    requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), customBackCallback);
-
-
-    // Date picker for the date button
-    mDateButton.setOnClickListener(v -> {
-      DatePickerFragment datePickerFragment = DatePickerFragment.newInstance(new Date(), this);
-      datePickerFragment.show(getParentFragmentManager(), "datePicker");
-    });
-
-    // Time picker for the start time button
-    mStartTimeButton.setOnClickListener(v -> {
-      TimePickerFragment timePickerFragment = TimePickerFragment.newInstance(new Date(), (view1, hourOfDay, minute) -> {
-        mStartTimeCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-        mStartTimeCalendar.set(Calendar.MINUTE, minute);
-        updateButtonTime(mStartTimeButton, mStartTimeCalendar,0);
-      });
-      timePickerFragment.show(getParentFragmentManager(), "startTimePicker");
-    });
-
-    // Time picker for the end time button with sanity check
-    mEndTimeButton.setOnClickListener(v -> {
-      TimePickerFragment timePickerFragment = TimePickerFragment.newInstance(new Date(), (view1, hourOfDay, minute) -> {
-        mEndTimeCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-        mEndTimeCalendar.set(Calendar.MINUTE, minute);
-        updateButtonTime(mEndTimeButton, mEndTimeCalendar, 1);
-      });
-      timePickerFragment.show(getParentFragmentManager(), "endTimePicker");
-    });
-
-    // Save button onClickListener to perform the saving operation
-    mSaveButton.setOnClickListener(v -> saveJournalEntry());
-  }
-
-  // This method will be called when a date is selected
-  @Override
-  public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-    mDateCalendar.set(year, month, dayOfMonth);
-    Date selectedDate = mDateCalendar.getTime();
-
-    // Format the selected date as "Day, Month Day, Year"
-    SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMMM dd, yyyy", Locale.getDefault());
-    String formattedDate = dateFormat.format(selectedDate);
-    mEntryDetailsViewModel.mEntry.setDate(formattedDate);
-    // Update the button text with the formatted date
-    mDateButton.setText(formattedDate);
-  }
-
-  // Helper method to update the button text with the formatted time (hh:mm) and replace button text with "Start Time" or "End Time"
-  private void updateButtonTime(Button button, Calendar calendar, int label) {
-    SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-    String formattedTime = timeFormat.format(calendar.getTime());
-    if(label==0){
-      mEntryDetailsViewModel.mEntry.setStartTime(formattedTime);
+    Bundle args = getArguments();
+    JournalEntry entry;
+    if(args != null && args.containsKey("entryId")){
+      Log.d(TAG, "Hello----------------------------------"+EntryDetailsFragmentArgs.fromBundle(args).getEntryId());
+      UUID entryId = UUID.fromString(EntryDetailsFragmentArgs.fromBundle(args).getEntryId());
+      Log.d(TAG, entryId.toString());
+      entry = mJournalViewModel.getEntryById(entryId);
+      sVM.setDate(entry.getDate());
+      sVM.setStartTime(entry.getStartTime());
+      sVM.setEndTime(entry.getEndTime());
+      mEditText.setText(entry.getTitle());
     }
-    else mEntryDetailsViewModel.mEntry.setEndTime(formattedTime);
-    // Set button text to the formatted time
+    else{
+      entry = null;
+//      sVM.setStartTime("START TIME");
+//      sVM.setEndTime("END TIME");
+//      sVM.setDate("DATE");
+    }
+    mEntry = entry;
 
-    button.setText(formattedTime);
-  }
+    updateUI();
 
-  // Method to perform sanity checks and save the journal entry
-  private void saveJournalEntry() {
-    String title = mTitleEditText.getText().toString().trim(); // In a real app, you'd probably have an EditText for the title
+    // Set an observer on the date field of the shared view model
+    sVM.getLiveDate().observe(getViewLifecycleOwner(), date -> updateUI());
+    sVM.getLiveStartTime().observe(getViewLifecycleOwner(), time -> updateUI());
+    sVM.getLiveEndTime().observe(getViewLifecycleOwner(), time -> updateUI());
+
+    // Setting listeners on the UI buttons
+    btnDate.setOnClickListener(v -> {
+      Navigation.findNavController(view).navigate(R.id.datePickerDialog);   // Change to safe args
+    });
+
+    btnStartTime.setOnClickListener(v -> {
+      sVM.setTimeClicked(true);
+      Navigation.findNavController(view).navigate(R.id.timePickerDialog);   // Change to safe args
+    });
+
+    btnEndTime.setOnClickListener(v -> {
+      sVM.setTimeClicked(false);
+      Navigation.findNavController(view).navigate(R.id.timePickerDialog);   // Change to safe args
+    });
+
+    btnSave.setOnClickListener(v -> {
+      String title = mEditText.getText().toString().trim(); // In a real app, you'd probably have an EditText for the title
 //    Log.d(TAG, "saveJournalEntry:"+mEndTimeButton.getText().toString().trim());
-    // Check if date, start time, and end time are set
-    if (title.equals("")||mDateButton.getText().toString().equals("Date") ||
-            mStartTimeButton.getText().toString().equals("Start Time") ||
-            mEndTimeButton.getText().toString().equals("End Time")) {
-      Toast.makeText(getContext(), "Please select date, start time, and end time", Toast.LENGTH_SHORT).show();
+      // Check if date, start time, and end time are set
+      if (title.equals("")||btnDate.getText().toString().equals("DATE") ||
+              btnStartTime.getText().toString().equals("START TIME") ||
+              btnEndTime.getText().toString().equals("END TIME")) {
+        Toast.makeText(getContext(), "Please select date, start time, and end time", Toast.LENGTH_SHORT).show();
+        return;
+      }
+
+      if(sVM.getLiveStartTime().getValue().equals("START TIME") || sVM.getLiveEndTime().getValue().equals("END TIME") || sVM.getLiveDate().getValue().equals("DATE")){
+        Toast.makeText(getContext(), "You must select the date and time to proceed!", Toast.LENGTH_SHORT).show();
+        return;
+      }
+      if(entry == null){
+        JournalEntry toAdd = new JournalEntry(mEditText.getText().toString(), sVM.getLiveStartTime().getValue(), sVM.getLiveEndTime().getValue(), sVM.getLiveDate().getValue());
+        mJournalViewModel.insert(toAdd);
+      }
+      else{
+        entry.setDate(sVM.getLiveDate().getValue());
+        entry.setStartTime(sVM.getLiveStartTime().getValue());
+        entry.setEndTime(sVM.getLiveEndTime().getValue());
+        entry.setTitle(mEditText.getText().toString());
+        mJournalViewModel.update(entry);
+      }
+      sVM.setStartTime("START TIME");
+      sVM.setEndTime("END TIME");
+      sVM.setDate("DATE");
+      Navigation.findNavController(view).navigate(R.id.entryListFragment);  // Change to safe args
+    });
+  }
+
+  public void updateUI(){
+    btnDate.setText(sVM.getLiveDate().getValue());
+    btnStartTime.setText(sVM.getLiveStartTime().getValue());
+    btnEndTime.setText(sVM.getLiveEndTime().getValue());
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    int id = item.getItemId();
+    if (id == R.id.action_delete) {
+      Log.d(TAG, "Delete this========================");
+      deleteEntry(getView());
+      return true;
+    }
+    else if (id == R.id.action_share) {
+      Log.d(TAG, "Share this========================");
+      shareEntry();
+      return true;
+    }
+      else {
+      return super.onOptionsItemSelected(item);
+    }
+  }
+
+  private void shareEntry() {
+    Log.d(TAG, "Share this!========================");
+    if(mEntry == null){
+      Toast.makeText(getContext(), "You can't share an entry that is not created!", Toast.LENGTH_SHORT).show();
       return;
     }
-    try{
-      mSavedStartTime=mStartTimeButton.getText().toString();
-      mSavedEndTime=mEndTimeButton.getText().toString();
-      SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-      Date startDate = timeFormat.parse(mSavedStartTime);
-      Date endDate = timeFormat.parse(mSavedEndTime);
-      mStartTimeCalendar.setTime(startDate);
-      mEndTimeCalendar.setTime(endDate);
-    }
-    catch (ParseException e) {
-      e.printStackTrace();
-    }
-    // Sanity check: ensure end time is after start time
-    if ( mEndTimeCalendar.before(mStartTimeCalendar)) {
-      Toast.makeText(getContext(), "End time must be after start time", Toast.LENGTH_SHORT).show();
+    String title = mEntry.getTitle();
+    String date = mEntry.getDate();
+    String startTime = mEntry.getStartTime();
+    String endTime = mEntry.getEndTime();
+
+    String toShare = "Look what I have been up to: " + title + " on " + date + ", " + startTime + " to " + endTime;
+
+    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+    shareIntent.setType("text/plain");
+    shareIntent.putExtra(Intent.EXTRA_TEXT, toShare);
+
+    startActivity(Intent.createChooser(shareIntent, "Share Text Via"));
+  }
+
+  private void deleteEntry(View view) {
+    if(mEntry == null){
+      Toast.makeText(getContext(), "You can't delete an entry that is not created!", Toast.LENGTH_SHORT).show();
       return;
     }
-
-    // Format the date and times for storing
-    SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMMM dd, yyyy", Locale.getDefault());
-    SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-
-    String formattedDate = dateFormat.format(mDateCalendar.getTime());
-    String formattedStartTime = timeFormat.format(mStartTimeCalendar.getTime());
-    String formattedEndTime = timeFormat.format(mEndTimeCalendar.getTime());
-
-    // Create a new JournalEntry
-    mEntryDetailsViewModel.mEntry.setTitle(title);
-    mEntryDetailsViewModel.mEntry.setDate(formattedDate);
-    mEntryDetailsViewModel.mEntry.setStartTime(formattedStartTime);
-    mEntryDetailsViewModel.mEntry.setEndTime(formattedEndTime);
-
-    // Insert the journal entry using the ViewModel
-    mEntryDetailsViewModel.saveEntry(mEntryDetailsViewModel.mEntry);
-    Log.d(TAG,formattedDate);
-    // Show a confirmation message
-    Toast.makeText(getContext(), "Journal entry saved", Toast.LENGTH_SHORT).show();
-//    requireActivity().onBackPressed();
-    customBackCallback.setEnabled(false);
-
-    // Navigate up using default navigation
-    Navigation.findNavController(view).navigateUp();
-
-    // Re-enable the callback after navigation completes
-    customBackCallback.setEnabled(true);
-
+    new AlertDialog.Builder(getContext())
+            .setTitle("Delete Entry")
+            .setMessage("Are you sure you want to delete this entry?")
+            .setPositiveButton("Yes", (dialog, which) -> {
+              mJournalViewModel.delete(mEntry);
+              dialog.dismiss();
+              Navigation.findNavController(view).navigate(R.id.entryListFragment);  // Change to safe args
+            })
+            .setNegativeButton("No", (dialog, which) -> {
+              dialog.dismiss();
+            })
+            .show();
   }
 }
-
-

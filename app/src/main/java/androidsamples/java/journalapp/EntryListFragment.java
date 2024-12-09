@@ -1,6 +1,5 @@
 package androidsamples.java.journalapp;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,165 +10,93 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.view.accessibility.AccessibilityNodeInfo;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
+
+import androidsamples.java.journalapp.database.JournalEntry;
+import androidsamples.java.journalapp.database.JournalEntryListAdapter;
+import androidsamples.java.journalapp.database.JournalViewModel;
 
 /**
  * A fragment representing a list of Items.
  */
 public class EntryListFragment extends Fragment {
+  private FloatingActionButton btnAddEntry;
   private JournalViewModel mJournalViewModel;
   private static final String TAG = "EntryListFragment";
-  private View view;
-  private boolean isNavigating = false;
-  @Override
-  public void onAttach(@NonNull Context context) {
-    super.onAttach(context);
-    Log.d(TAG, "onAttach called");
-  }
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
-    Log.d(TAG, "onCreate called");
     super.onCreate(savedInstanceState);
-    mJournalViewModel = new ViewModelProvider(this).get(JournalViewModel.class);
     setHasOptionsMenu(true);
   }
 
-  @Override
+   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                            Bundle savedInstanceState) {
-    Log.d(TAG, "onCreateView called");
-    view = inflater.inflate(R.layout.fragment_entry_list, container, false);
-
-    FloatingActionButton addEntryButton = view.findViewById(R.id.btn_add_entry);
-    addEntryButton.setContentDescription("Add new journal entry"); // TalkBack description
-    addEntryButton.setOnClickListener(v -> {
-      JournalEntry entry = new JournalEntry("", "Start Time", "End Time", "Date");
-      mJournalViewModel.insert(entry);
-    });
-
-    RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
-    JournalEntryListAdapter adapter = new JournalEntryListAdapter(view.getContext());
-    recyclerView.setAdapter(adapter);
-    recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
-    recyclerView.setContentDescription("List of journal entries"); // TalkBack description
-
-    mJournalViewModel.getAllEntries().observe(getViewLifecycleOwner(), entries -> {
-      adapter.setEntries(entries);
-    });
-
-    return view;
+     return inflater.inflate(R.layout.fragment_entry_list, container, false);
   }
 
   @Override
-  public void onViewCreated(@NonNull View view, @NonNull Bundle savedInstanceState) {
+  public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+    inflater.inflate(R.menu.entry_list_menu, menu);
+    super.onCreateOptionsMenu(menu, inflater);
+  }
+
+  @Override
+  public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState){
     super.onViewCreated(view, savedInstanceState);
-    Log.d(TAG, "onViewCreated called");
 
-    mJournalViewModel.getLastInsertedEntryId().observe(getViewLifecycleOwner(), entryId -> {
-      if (entryId != null && !isNavigating) {
-        isNavigating = true;
-        EntryListFragmentDirections.AddEntryAction action = EntryListFragmentDirections.addEntryAction();
-        action.setEntryId(entryId);
+      RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
+      JournalEntryListAdapter adapter = new JournalEntryListAdapter(requireContext(), entry -> {
+        Log.d(TAG, (entry.getUid().toString()) + "----------------------------++");
+        Navigation.findNavController(view).navigate(EntryListFragmentDirections.updateEntryAction(entry.getUid().toString()));
+      });
 
-        try {
-          Navigation.findNavController(view).navigate(action);
-        } catch (IllegalArgumentException e) {
-          Log.e(TAG, "Navigation action already handled.");
-        }
-
-        mJournalViewModel.clearLastInsertedEntryId();
+    recyclerView.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+      @Override
+      public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+        super.onInitializeAccessibilityNodeInfo(host, info);
+        info.setContentDescription("Your custom description here");
       }
     });
-  }
-;
+      recyclerView.setContentDescription("Journal Entries List");
+      recyclerView.setAdapter(adapter);
+      recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-  @Override
-  public void onActivityCreated(Bundle savedInstanceState) {
-    super.onActivityCreated(savedInstanceState);
-    Log.d(TAG, "onActivityCreated called");
-  }
+      mJournalViewModel = new ViewModelProvider(this).get(JournalViewModel.class);
+      mJournalViewModel.getAllEntries().observe(getViewLifecycleOwner(), adapter::setEntries);
 
-  @Override
-  public void onStart() {
-    super.onStart();
-    Log.d(TAG, "onStart called");
-  }
-
-  @Override
-  public void onResume() {
-    super.onResume();
-    Log.d(TAG, "onResume called");
-  }
-
-  @Override
-  public void onPause() {
-    super.onPause();
-    Log.d(TAG, "onPause called");
-    isNavigating = false;
-  }
-
-  @Override
-  public void onStop() {
-    super.onStop();
-    Log.d(TAG, "onStop called");
-  }
-
-  @Override
-  public void onDestroyView() {
-    super.onDestroyView();
-    Log.d(TAG, "onDestroyView called");
-  }
-
-  @Override
-  public void onDestroy() {
-    super.onDestroy();
-    Log.d(TAG, "onDestroy called");
-  }
-
-  @Override
-  public void onDetach() {
-    super.onDetach();
-    Log.d(TAG, "onDetach called");
+    btnAddEntry = view.findViewById(R.id.btn_add_entry);
+    btnAddEntry.setOnClickListener(v -> {
+      //Implementing this using navigation by ID's since there are no arguments, so no Bundle overhead!
+      Navigation.findNavController(view).navigate(R.id.addEntryAction);   // Change to safe args
+    });
   }
 
 
-
-
-
   @Override
-  public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-    super.onCreateOptionsMenu(menu, inflater);
-    inflater.inflate(R.menu.menu_entry_list, menu);
-
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    if (item.getItemId() == R.id.info) {
-      openAuthorWebpage();
-      return true; // Return true to indicate that the click was handled
+  public boolean onOptionsItemSelected(MenuItem item) {
+    int id = item.getItemId();
+    if (id == R.id.action_info) {
+      Intent infoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://jamesclear.com/atomic-habits"));
+      startActivity(infoIntent);
+      return true;
     }
     return super.onOptionsItemSelected(item);
-  }
-
-  private void openAuthorWebpage() {
-    String url = "https://jamesclear.com/atomic-habits";
-    Intent intent = new Intent(Intent.ACTION_VIEW);
-    intent.setData(Uri.parse(url));
-    startActivity(intent);
   }
 
 

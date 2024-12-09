@@ -1,12 +1,15 @@
 // app/src/androidTest/java/com/yourpackage/yourapp/CustomViewActions.java
 package androidsamples.java.journalapp;
 
+import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
+
 import android.view.View;
 import android.widget.Button;
+
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
+
 import org.hamcrest.Matcher;
-import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 
 public class CustomViewActions {
 

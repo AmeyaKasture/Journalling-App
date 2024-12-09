@@ -13,20 +13,21 @@
     <action
         android:id="@+id/addEntryAction"
         app:destination="@id/entryDetailsFragment" />
-
+    <action
+        android:id="@+id/updateEntryAction"
+        app:destination="@id/entryDetailsFragment">
+      <argument
+          android:name="entryId"
+          app:argType="string" />
+    </action>
   </fragment>
-
   <fragment
       android:id="@+id/entryDetailsFragment"
       android:name="androidsamples.java.journalapp.EntryDetailsFragment"
       android:label="fragment_entry_details"
       tools:layout="@layout/fragment_entry_details">
-    <action
-        android:id="@+id/simulateBack"
-        app:destination="@id/entryListFragment" />
     <argument
         android:name="entryId"
-        android:defaultValue='""'
         app:argType="string" />
     <action
         android:id="@+id/datePickerAction"
@@ -34,6 +35,9 @@
     <action
         android:id="@+id/timePickerAction"
         app:destination="@id/timePickerDialog" />
+    <action
+      android:id="@+id/goBackAction"
+      app:destination="@+id/entryListFragment" />
     <argument
         android:name="selectedYear"
         app:argType="integer"
@@ -54,10 +58,5 @@
 
   <dialog
       android:id="@+id/timePickerDialog"
-      android:name="androidsamples.java.journalapp.TimePickerFragment" >
-    <argument
-        android:name="isStart"
-        app:argType="boolean"
-        android:defaultValue="true"/>
-  </dialog>
+      android:name="androidsamples.java.journalapp.TimePickerFragment" />
 </navigation>

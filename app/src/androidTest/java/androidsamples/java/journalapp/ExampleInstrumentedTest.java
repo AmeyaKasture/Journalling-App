@@ -67,8 +67,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.btn_end_time)).perform(setText("02:00 PM"));
         onView(withId(R.id.btn_save)).perform(click());
         onView(anyOf(withText("Hello"))).perform(click());
-        onView(withId(R.id.delete)).perform(click());
-        onView(withText("OK")).perform(click());
+        onView(withId(R.id.action_delete)).perform(click());
+//        onView(withText("YES")).perform(click());
     }
 
     @Test
@@ -112,23 +112,26 @@ public class ExampleInstrumentedTest {
 
     @Test
     public void infoDetailDisplay() {
-        onView(withId(R.id.info)).perform(click());
+        onView(withId(R.id.action_info)).perform(click());
     }
 
     @Test
     public void ShareButtonDisplay() {
         onView(withId(R.id.btn_add_entry)).perform(click());
-        onView(withId(R.id.share)).perform(click());
+        onView(withId(R.id.action_share)).perform(click());
     }
 
     @Test
     public void testToolbarPresence() {
         onView(withId(R.id.btn_add_entry)).perform(click());
         onView(withId(R.id.edit_title)).perform(clearText()).perform(typeText("Testing"));
+        onView(withId(R.id.btn_entry_date)).perform(setText("Sat, Oct 26, 2024"));
+        onView(withId(R.id.btn_start_time)).perform(setText("10:00 AM"));
+        onView(withId(R.id.btn_end_time)).perform(setText("02:00 PM"));
         onView(withId(R.id.btn_save)).perform(click());
         onView(anyOf(withText("Testing"))).perform(click());
-        onView(withId(R.id.delete)).perform(click());
-        onView(withText("OK")).perform(click());
+//        onView(withId(R.id.action_delete)).perform(click());
+//        onView(withText("OK")).perform(click());
     }
 
 

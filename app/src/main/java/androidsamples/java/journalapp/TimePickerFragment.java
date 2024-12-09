@@ -3,52 +3,39 @@ package androidsamples.java.journalapp;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
-import android.widget.TimePicker;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-
-import java.util.Calendar;
-import java.util.Date;
+import androidx.lifecycle.ViewModelProvider;
 
 public class TimePickerFragment extends DialogFragment {
 
-  private static final String ARG_TIME = "time";
-  private TimePickerDialog.OnTimeSetListener mListener;
+  private SharedViewModel sVM;
 
-  // Factory method to create a new instance of TimePickerFragment with the initial time passed as argument
-  @NonNull
-  public static TimePickerFragment newInstance(Date time, TimePickerDialog.OnTimeSetListener listener) {
-    TimePickerFragment fragment = new TimePickerFragment();
-    fragment.mListener = listener;
+//  @NonNull
+//  public static TimePickerFragment newInstance(Date time) {
+//    // TODO implement the method
+//    return null;
+//  }
 
-    Bundle args = new Bundle();
-    args.putLong(ARG_TIME, time.getTime());
-    fragment.setArguments(args);
-
-    return fragment;
+  @Override
+  public void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    sVM = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
   }
 
   @NonNull
   @Override
   public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-    // Get the current time or the time passed as an argument
-    Calendar calendar = Calendar.getInstance();
-    if (getArguments() != null) {
-      long timeInMillis = getArguments().getLong(ARG_TIME);
-      calendar.setTime(new Date(timeInMillis));
-    }
-
-    int hour = calendar.get(Calendar.HOUR_OF_DAY);
-    int minute = calendar.get(Calendar.MINUTE);
-
-    // Create a new instance of TimePickerDialog and return it
-    TimePickerDialog dialog = new TimePickerDialog(requireContext(), mListener, hour, minute, true);
-
-    // Set a TalkBack content description for the dialog
-    dialog.setTitle("Select time"); // Short description for screen readers
-
-    return dialog;
+    // TODO implement the method
+    return new TimePickerDialog(requireContext(), (tp, hm, m)->{
+      sVM.setTime(hm, m);
+    }, 0, 0, false);
   }
 }
